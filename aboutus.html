@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - DigiHealth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #2c5282;
+            --light-blue: #ebf8ff;
+            --accent-teal: #38b2ac;
+            --text-dark: #2d3748;
+            --bg-white: rgba(255, 255, 255, 0.9); /* Slightly transparent for content */
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            color: var(--text-dark);
+            /* Center-align all text on the page by default */
+            text-align: center;
+        }
+
+        /* --- BACKGROUND IMAGE SETTINGS (SAME AS MAIN PAGE) --- */
+        body {
+            /* Replace 'logo.jpg' with your actual file path if different */
+            background-image: linear-gradient(rgba(235, 248, 255, 0.85), rgba(235, 248, 255, 0.85)), url('logo.jpg');
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* --- HEADING ONLY (BLUE BG) --- */
+        .brand-header {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 20px 0; /* Shorter header than main page */
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .brand-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            transition: transform 0.3s ease;
+            display: inline-block;
+            cursor: default;
+        }
+
+        /* Enlarge heading on hover */
+        .brand-header h1:hover {
+            transform: scale(1.1);
+        }
+
+        /* --- CENTER-ALIGNED ABOUT US CONTENT --- */
+        .about-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            max-width: 800px;
+            margin: 0 auto; /* Ensure centering horizontally */
+            flex-grow: 1; /* Pushes footer down */
+        }
+
+        .about-content {
+            background: var(--bg-white);
+            backdrop-filter: blur(5px); /* Frosted glass effect */
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 50px;
+            width: 100%;
+            border: 1px solid var(--light-blue);
+        }
+
+        .about-content h2 {
+            color: var(--primary-blue);
+            font-size: 2.2rem;
+            margin-top: 0;
+            margin-bottom: 25px;
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+
+        /* Enlarge sub-headings on hover */
+        .about-content h2:hover {
+            transform: scale(1.05);
+        }
+
+        .about-content p {
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .btn-back {
+            display: inline-block;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 30px;
+            transition: 0.2s;
+            background: var(--accent-teal); 
+            color: white;
+        }
+
+        .btn-back:hover {
+            opacity: 0.9;
+        }
+
+        footer {
+            width: 100%;
+            padding: 30px 0;
+            color: #718096;
+            font-size: 0.9rem;
+            margin-top: auto; /* Pushes to bottom */
+        }
+    </style>
+</head>
+<body>
+
+    <header class="brand-header">
+        <h1>DigiHealth</h1>
+    </header>
+
+    <div class="about-container">
+        <div class="about-content">
+            <h2>About Us</h2>
+            
+            <p>We provide a reliable and secure platform designed to help hospitals and healthcare providers efficiently store and manage patient health data. Our goal is to simplify the way medical information is handled by offering a digital solution that replaces traditional paper-based records with a modern, organized system.
+
+Our system allows healthcare professionals to safely store important patient information such as medical history, treatment details, prescriptions, laboratory reports, and appointment records. By centralizing patient data in one place, doctors and hospital staff can easily access the information they need, enabling faster decision-making and better patient care.
+
+We focus on maintaining high standards of data security, accuracy, and accessibility. Patient information is protected using secure storage systems and controlled access, ensuring that sensitive health records remain confidential and are only available to authorized users.
+
+In addition to patient data storage, our platform supports various hospital management functions such as patient registration, appointment scheduling, medical record tracking, and report management. These features help healthcare facilities improve efficiency, reduce administrative workload, and provide a smoother experience for both staff and patients.
+
+Our mission is to support healthcare organizations by providing technology that enhances patient care, improves data management, and streamlines hospital operations. We aim to create a reliable system that healthcare professionals can trust for managing critical medical information.</p>
+            
+            <a href="welcome.html" class="btn-back">Back to homepage</a>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 DigiHealth Systems. All rights reserved.
+    </footer>
+
+</body>
+</html>

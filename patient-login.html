@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Portal - DigiHealth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a365d;
+            --accent: #38b2ac;
+            --error: #e53e3e;
+            --bg: #f0f4f8;
+            --white: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        body {
+            margin: 0; font-family: 'Inter', sans-serif;
+            background-color: var(--bg); display: flex;
+            justify-content: center; align-items: center; min-height: 100vh;
+        }
+
+        .auth-container {
+            background: var(--white); width: 100%; max-width: 480px;
+            padding: 40px; border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); margin: 20px;
+        }
+
+        .auth-header { text-align: center; margin-bottom: 25px; }
+        .auth-header h2 { color: var(--primary); font-weight: 800; margin-bottom: 5px; }
+
+        .form-group { margin-bottom: 18px; position: relative; }
+        .form-group label {
+            display: block; font-size: 0.75rem; font-weight: 700;
+            margin-bottom: 6px; color: #4a5568; text-transform: uppercase;
+        }
+
+        .form-group input {
+            width: 100%; padding: 14px; border: 2px solid var(--border);
+            border-radius: 12px; box-sizing: border-box; font-family: inherit;
+            transition: 0.3s; font-size: 0.95rem;
+        }
+
+        .form-group input:focus { outline: none; border-color: var(--accent); background-color: #faffff; }
+
+        .btn-submit {
+            width: 100%; padding: 16px; background-color: var(--accent);
+            color: white; border: none; border-radius: 12px;
+            font-weight: 700; cursor: pointer; font-size: 1rem;
+            margin-top: 10px; transition: 0.3s;
+        }
+
+        .toggle-link { text-align: center; margin-top: 20px; font-size: 0.9rem; color: #718096; }
+        .toggle-link a { color: var(--accent); text-decoration: none; font-weight: 700; cursor: pointer; }
+        
+        .hidden { display: none; }
+        
+        /* Registration Photo Styles */
+        .reg-photo-wrapper {
+            width: 100px; height: 100px; margin: 10px auto;
+            position: relative; cursor: pointer;
+        }
+        .reg-photo-img {
+            width: 100%; height: 100%; border-radius: 50%;
+            object-fit: cover; border: 3px solid var(--accent); background: #edf2f7;
+        }
+
+        .reset-box { border: 2px dashed var(--accent); padding: 20px; border-radius: 15px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+    <div id="login-view">
+        <div class="auth-header">
+            <h2>Patient Login</h2>
+            <p>Access your DigiHealth records</p>
+        </div>
+        <form onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="lUser" placeholder="Enter username" required>
+            </div>
+            <div class="form-group">
+                <label>PIN</label>
+                <input type="password" id="lPin" placeholder="Enter PIN" required maxlength="6">
+            </div>
+            <button type="submit" class="btn-submit">Login</button>
+        </form>
+        <div class="toggle-link">
+            <a onclick="showView('reset-view')">Forgot PIN?</a>
+        </div>
+        <div class="toggle-link">
+            Don't have an account? <a onclick="showView('register-view')">Register Now</a>
+        </div>
+    </div>
+
+    <div id="register-view" class="hidden">
+        <div class="auth-header">
+            <h2>New Registration</h2>
+            <p>Set up your profile photo and details</p>
+        </div>
+        
+        <div class="reg-photo-wrapper" onclick="document.getElementById('rPhotoInput').click()">
+            <img src="https://via.placeholder.com/100" id="rPhotoDisplay" class="reg-photo-img">
+            <div style="font-size: 10px; color: var(--accent); text-align: center; margin-top: 5px;">Add Photo</div>
+        </div>
+        <input type="file" id="rPhotoInput" accept="image/*" style="display:none" onchange="previewRegPhoto(this)">
+
+        <form onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="rName" placeholder="Enter Full Name" required>
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="number" id="rPhone" placeholder="10-digit number" required>
+            </div>
+            <div class="form-group">
+                <label>Date of Birth</label>
+                <input type="date" id="rDob" required>
+            </div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="rUser" placeholder="Create Username" required>
+            </div>
+            <div class="form-group">
+                <label>PIN</label>
+                <input type="password" id="rPin" placeholder="4-6 Digits" required minlength="4" maxlength="6">
+            </div>
+            <div class="form-group">
+                <label>Confirm PIN</label>
+                <input type="password" id="rPinConf" placeholder="Confirm PIN" required>
+            </div>
+            <button type="submit" class="btn-submit">Create Profile</button>
+        </form>
+        <div class="toggle-link">
+            <a onclick="showView('login-view')">Back to Login</a>
+        </div>
+    </div>
+
+    <div id="reset-view" class="hidden">
+        <div class="auth-header">
+            <h2>Reset PIN</h2>
+            <p>Verify phone to get OTP</p>
+        </div>
+        <form id="otp-request-form" onsubmit="handleSendOTP(event)">
+            <div class="form-group">
+                <label>Registered Phone Number</label>
+                <input type="number" id="resetPhone" required>
+            </div>
+            <button type="submit" class="btn-submit">Send OTP</button>
+        </form>
+
+        <div id="otp-verify-section" class="hidden reset-box">
+            <div class="form-group">
+                <label>Enter 6-Digit OTP</label>
+                <input type="text" id="inputOTP" maxlength="6">
+            </div>
+            <button class="btn-submit" onclick="handleVerifyOTP()">Verify OTP</button>
+        </div>
+
+        <div id="new-pin-section" class="hidden reset-box">
+            <div class="form-group">
+                <label>New PIN</label>
+                <input type="password" id="newPin" maxlength="6">
+            </div>
+            <button class="btn-submit" onclick="saveNewPin()">Update PIN</button>
+        </div>
+        <div class="toggle-link">
+            <a onclick="location.reload()">Back to Login</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentRegPhoto = ""; 
+    let userToReset = null;
+    let generatedOTP = null;
+
+    function showView(viewId) {
+        document.getElementById('login-view').classList.add('hidden');
+        document.getElementById('register-view').classList.add('hidden');
+        document.getElementById('reset-view').classList.add('hidden');
+        document.getElementById(viewId).classList.remove('hidden');
+    }
+
+    // 1. Photo Preview for Registration
+    function previewRegPhoto(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('rPhotoDisplay').src = e.target.result;
+                currentRegPhoto = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // 2. Handle Registration
+    function handleRegister(e) {
+        e.preventDefault();
+        const pin = document.getElementById('rPin').value;
+        const conf = document.getElementById('rPinConf').value;
+        if (pin !== conf) { alert("⚠️ PINs do not match!"); return; }
+
+        const patients = JSON.parse(localStorage.getItem('patientsList')) || [];
+        const username = document.getElementById('rUser').value;
+        if(patients.some(p => p.username === username)) { alert("⚠️ Username taken!"); return; }
+
+        const newPatient = {
+            name: document.getElementById('rName').value,
+            phone: document.getElementById('rPhone').value,
+            dob: document.getElementById('rDob').value,
+            username: username,
+            pin: pin,
+            profilePic: currentRegPhoto // Image is saved here
+        };
+
+        patients.push(newPatient);
+        localStorage.setItem('patientsList', JSON.stringify(patients));
+        alert("✅ Account Created Successfully!");
+        showView('login-view');
+    }
+
+    // 3. Handle Login
+    function handleLogin(e) {
+        e.preventDefault();
+        const patients = JSON.parse(localStorage.getItem('patientsList')) || [];
+        const found = patients.find(p => p.username === document.getElementById('lUser').value && p.pin === document.getElementById('lPin').value);
+
+        if (found) {
+            localStorage.setItem('currentPatient', JSON.stringify(found));
+            window.location.href = "patient-dashboard.html"; 
+        } else {
+            alert("❌ Invalid Credentials");
+        }
+    }
+
+    // 4. Reset PIN Logic
+    function handleSendOTP(e) {
+        e.preventDefault();
+        const phone = document.getElementById('resetPhone').value;
+        const patients = JSON.parse(localStorage.getItem('patientsList')) || [];
+        userToReset = patients.find(p => p.phone === phone);
+
+        if (userToReset) {
+            generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+            alert("📱 SMS SIMULATION\nOTP: " + generatedOTP);
+            document.getElementById('otp-request-form').classList.add('hidden');
+            document.getElementById('otp-verify-section').classList.remove('hidden');
+        } else {
+            alert("❌ Number not found");
+        }
+    }
+
+    function handleVerifyOTP() {
+        if (document.getElementById('inputOTP').value === generatedOTP) {
+            document.getElementById('otp-verify-section').classList.add('hidden');
+            document.getElementById('new-pin-section').classList.remove('hidden');
+        } else {
+            alert("❌ Invalid OTP");
+        }
+    }
+
+    function saveNewPin() {
+        const newPin = document.getElementById('newPin').value;
+        if (newPin === userToReset.pin) {
+            alert("⚠️ New PIN cannot be the same as the old one.");
+            return;
+        }
+        let patients = JSON.parse(localStorage.getItem('patientsList'));
+        const index = patients.findIndex(p => p.username === userToReset.username);
+        patients[index].pin = newPin;
+        localStorage.setItem('patientsList', JSON.stringify(patients));
+        alert("✅ PIN Reset Successful!");
+        location.reload();
+    }
+</script>
+</body>
+</html>

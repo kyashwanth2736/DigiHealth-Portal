@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Profile - DigiHealth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a365d;
+            --accent: #38b2ac;
+            --bg: #f0f4f8;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --locked: #f7fafc;
+        }
+
+        body {
+            margin: 0; font-family: 'Inter', sans-serif;
+            background-color: var(--bg); display: flex;
+            justify-content: center; align-items: center; min-height: 100vh;
+        }
+
+        .profile-container {
+            background: var(--white); width: 100%; max-width: 600px;
+            padding: 40px; border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08); margin: 20px;
+        }
+
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h2 { color: var(--primary); font-weight: 800; margin: 0; }
+        
+        /* Photo Section */
+        .photo-section { text-align: center; margin-bottom: 25px; }
+        .avatar-wrapper {
+            width: 120px; height: 120px; margin: 0 auto;
+            position: relative; cursor: pointer;
+        }
+        .avatar-img {
+            width: 100%; height: 100%; border-radius: 50%;
+            object-fit: cover; border: 4px solid var(--accent); background: #e2e8f0;
+        }
+        .upload-badge {
+            position: absolute; bottom: 5px; right: 5px;
+            background: var(--primary); color: white;
+            width: 30px; height: 30px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; border: 2px solid white;
+        }
+
+        /* Form Grid */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full-width { grid-column: span 2; }
+
+        .form-group label {
+            display: block; font-size: 0.7rem; font-weight: 700;
+            margin-bottom: 6px; color: #4a5568; text-transform: uppercase;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 12px; border: 2px solid var(--border);
+            border-radius: 12px; font-family: inherit; font-size: 0.95rem;
+            box-sizing: border-box; transition: 0.3s;
+        }
+        .form-group input:focus { outline: none; border-color: var(--accent); }
+
+        .doctor-only { background-color: var(--locked); cursor: not-allowed; color: #a0aec0; }
+        .status-msg { text-align: center; font-size: 0.85rem; color: var(--accent); margin-top: 10px; height: 20px; }
+
+        .btn-save {
+            width: 100%; padding: 16px; background-color: var(--accent);
+            color: white; border: none; border-radius: 12px;
+            font-weight: 700; cursor: pointer; margin-top: 20px;
+        }
+
+        #photoInput { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="profile-container">
+    <div class="header">
+        <h2>Patient Profile</h2>
+        <p id="welcome-msg" style="color: #718096;"></p>
+    </div>
+
+    <div class="photo-section">
+        <div class="avatar-wrapper" onclick="document.getElementById('photoInput').click()">
+            <img src="https://via.placeholder.com/150" id="profileDisplay" class="avatar-img">
+            <div class="upload-badge">📷</div>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" onchange="previewImage(this)">
+    </div>
+
+    <form id="profileForm" oninput="showSavingStatus()">
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label>Full Name (Locked)</label>
+                <input type="text" id="pName" class="doctor-only" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Date of Birth (Locked)</label>
+                <input type="text" id="pDob" class="doctor-only" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Blood Group (Locked)</label>
+                <input type="text" id="pBlood" class="doctor-only" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="number" id="pPhone">
+            </div>
+
+            <div class="form-group">
+                <label>Email ID</label>
+                <input type="email" id="pEmail">
+            </div>
+
+            <div class="form-group full-width">
+                <label>Aadhaar / ABHA / Passport Number</label>
+                <input type="text" id="pIdNum">
+            </div>
+
+            <div class="form-group full-width">
+                <label>Residential Address</label>
+                <textarea id="pAddress" rows="3"></textarea>
+            </div>
+        </div>
+
+        <button type="button" class="btn-save" onclick="manualSave()">Save & Sync Data</button>
+        <div id="status" class="status-msg"></div>
+    </form>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="patient-dashboard.html" style="text-decoration: none; color: var(--primary); font-weight: 700;">← Back to Dashboard</a>
+    </div>
+</div>
+
+<script>
+    let currentPatient = null;
+    let autoSaveTimeout;
+
+    window.onload = function() {
+        currentPatient = JSON.parse(localStorage.getItem('currentPatient'));
+        
+        if (!currentPatient) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        document.getElementById('welcome-msg').innerText = "Logged in as: " + currentPatient.username;
+        
+        // Initial Data Load
+        loadData();
+    };
+
+    function loadData() {
+        if (currentPatient.profilePic) document.getElementById('profileDisplay').src = currentPatient.profilePic;
+        document.getElementById('pName').value = currentPatient.name || "";
+        document.getElementById('pDob').value = currentPatient.dob || "";
+        document.getElementById('pBlood').value = currentPatient.bloodGroup || "Pending";
+        document.getElementById('pPhone').value = currentPatient.phone || "";
+        document.getElementById('pEmail').value = currentPatient.email || "";
+        document.getElementById('pIdNum').value = currentPatient.idNumber || "";
+        document.getElementById('pAddress').value = currentPatient.address || "";
+    }
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profileDisplay').src = e.target.result;
+                manualSave(); // Save image immediately
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // This shows "Saving..." text and then triggers the actual save after a 1 second pause in typing
+    function showSavingStatus() {
+        document.getElementById('status').innerText = "Typing...";
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = setTimeout(manualSave, 1500); 
+    }
+
+    function manualSave() {
+        const patients = JSON.parse(localStorage.getItem('patientsList')) || [];
+        
+        // Construct the updated object
+        const updatedInfo = {
+            ...currentPatient,
+            phone: document.getElementById('pPhone').value,
+            email: document.getElementById('pEmail').value,
+            idNumber: document.getElementById('pIdNum').value,
+            address: document.getElementById('pAddress').value,
+            profilePic: document.getElementById('profileDisplay').src
+        };
+
+        // 1. Update Session
+        localStorage.setItem('currentPatient', JSON.stringify(updatedInfo));
+        currentPatient = updatedInfo;
+
+        // 2. Update the Global Database (List)
+        const index = patients.findIndex(p => p.username === currentPatient.username);
+        if (index !== -1) {
+            patients[index] = updatedInfo;
+            localStorage.setItem('patientsList', JSON.stringify(patients));
+        }
+
+        document.getElementById('status').innerText = "✅ All changes saved and synced!";
+        setTimeout(() => { document.getElementById('status').innerText = ""; }, 3000);
+    }
+</script>
+
+</body>
+</html>

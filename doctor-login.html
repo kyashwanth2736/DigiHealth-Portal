@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Portal | DigiHealth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #2c5282;
+            --light-blue: #f0f7ff;
+            --accent-teal: #38b2ac;
+            --text-dark: #2d3748;
+            --border-gray: #e2e8f0;
+            --error-red: #e53e3e;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-blue);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: #fff;
+            width: 100%;
+            max-width: 480px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(44, 82, 130, 0.1);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .auth-header h2 {
+            color: var(--primary-blue);
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .auth-header p {
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        label::after {
+            content: " *";
+            color: var(--error-red);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1.5px solid var(--border-gray);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(44, 82, 130, 0.1);
+        }
+
+        .gender-group {
+            display: flex;
+            gap: 20px;
+            padding: 5px 0;
+        }
+
+        .gender-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .gender-option::after { content: "" !important; }
+        .gender-option input { width: auto; cursor: pointer; }
+
+        .submit-btn {
+            width: 100%;
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover { background-color: #2a4365; }
+
+        .toggle-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .toggle-link a {
+            color: var(--accent-teal);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .forgot-pin {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #718096;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .hidden { display: none; }
+
+        .file-info {
+            font-size: 0.75rem;
+            color: #718096;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+    <div id="login-form">
+        <div class="auth-header">
+            <h2>Doctor Login</h2>
+            <p>Enter your credentials to continue</p>
+        </div>
+        <form onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="login-id">License ID</label>
+                <input type="text" id="login-id" placeholder="Enter License ID" required>
+            </div>
+            <div class="form-group">
+                <label for="login-pin">Secret PIN</label>
+                <input type="password" id="login-pin" maxlength="6" pattern="\d{4,6}" placeholder="Enter PIN" required>
+            </div>
+            <button type="submit" class="submit-btn">Login</button>
+        </form>
+        <a onclick="showReset()" class="forgot-pin">Reset / Forgot PIN?</a>
+        <div class="toggle-link">
+            New to DigiHealth? <a onclick="toggleAuth('register')">Register Here</a>
+        </div>
+        <div class="toggle-link">
+         <a href="welcome.html" onclick="toggleForm()">Back to homepage</a>
+        </div>
+    </div>
+
+    <div id="register-form" class="hidden">
+        <div class="auth-header">
+            <h2>Doctor Registration</h2>
+            <p>Create your medical profile</p>
+        </div>
+        <form onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label for="reg-name">Doctor Name</label>
+                <input type="text" id="reg-name" placeholder="Dr. Full Name" required>
+            </div>
+
+            <div class="form-group">
+                <label>Gender</label>
+                <div class="gender-group">
+                    <label class="gender-option"><input type="radio" name="gender" value="Male" required> Male</label>
+                    <label class="gender-option"><input type="radio" name="gender" value="Female"> Female</label>
+                    <label class="gender-option"><input type="radio" name="gender" value="Other"> Other</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-type">Doctor Type</label>
+                <select id="reg-type" required>
+                    <option value="" disabled selected>Select Specialization</option>
+                    <option value="General Physician">General Physician</option>
+                    <option value="General Surgeon">General Surgeon</option>
+                    <option value="Anesthesiologist">Anesthesiologist</option>
+                    <option value="Allergist">Allergist</option>
+                    <option value="Psychiatrist">Psychiatrist</option>
+                    <option value="Radiologist">Radiologist</option>
+                    <option value="Cardiologist">Cardiologist</option>
+                    <option value="Dermatologist">Dermatologist</option>
+                    <option value="Pediatrician">Pediatrician</option>
+                    <option value="Neurologist">Neurologist</option>
+                    <option value="Oncologist">Oncologist</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-photo">Profile Photo</label>
+                <input type="file" id="reg-photo" accept="image/*" required>
+                <div class="file-info">Mandatory: Upload a clear headshot.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-license-file">License Proof (PDF)</label>
+                <input type="file" id="reg-license-file" accept=".pdf" required>
+                <div class="file-info">Mandatory: Upload medical license in PDF.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-id">License ID</label>
+                <input type="text" id="reg-id" placeholder="Medical License Number" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="reg-pin">Create PIN</label>
+                <input type="password" id="reg-pin" maxlength="6" pattern="\d{4,6}" placeholder="4-6 digit numeric PIN" required>
+            </div>
+
+            <button type="submit" class="submit-btn" style="background-color: var(--accent-teal);">Register Now</button>
+        </form>
+        <div class="toggle-link">
+            Already have an account? <a onclick="toggleAuth('login')">Login Here</a>
+        </div>
+    </div>
+
+    <div id="reset-form" class="hidden">
+        <div class="auth-header">
+            <h2>Reset PIN</h2>
+            <p>Verify your License ID</p>
+        </div>
+        <form onsubmit="event.preventDefault(); alert('Reset link sent to registered email!'); toggleAuth('login');">
+            <div class="form-group">
+                <label>License ID</label>
+                <input type="text" required>
+            </div>
+            <button type="submit" class="submit-btn">Request Reset</button>
+        </form>
+        <div class="toggle-link"><a onclick="toggleAuth('login')">Back to Login</a></div>
+    </div>
+</div>
+
+<script>
+    function toggleAuth(view) {
+        document.getElementById('login-form').classList.add('hidden');
+        document.getElementById('register-form').classList.add('hidden');
+        document.getElementById('reset-form').classList.add('hidden');
+        if(view === 'register') document.getElementById('register-form').classList.remove('hidden');
+        else document.getElementById('login-form').classList.remove('hidden');
+    }
+
+    function showReset() {
+        document.getElementById('login-form').classList.add('hidden');
+        document.getElementById('reset-form').classList.remove('hidden');
+    }
+
+    async function handleRegister(e) {
+        e.preventDefault();
+        
+        const photoFile = document.getElementById('reg-photo').files[0];
+        const licenseFile = document.getElementById('reg-license-file').files[0];
+
+        // File to Base64 conversion
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+
+        try {
+            const photoBase64 = await toBase64(photoFile);
+            const name = document.getElementById('reg-name').value;
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+            const type = document.getElementById('reg-type').value;
+            const id = document.getElementById('reg-id').value;
+            const pin = document.getElementById('reg-pin').value;
+
+            let doctors = JSON.parse(localStorage.getItem('doctorAccounts')) || [];
+            
+            if (doctors.find(doc => doc.licenseId === id)) {
+                alert("This License ID is already registered!");
+                return;
+            }
+
+            const newDoctor = {
+                fullName: name,
+                gender: gender,
+                specialization: type,
+                licenseId: id,
+                secretPin: pin,
+                profilePic: photoBase64, // Real uploaded photo
+                licenseAttached: licenseFile.name
+            };
+
+            doctors.push(newDoctor);
+            localStorage.setItem('doctorAccounts', JSON.stringify(doctors));
+            alert("Registration Successful!");
+            toggleAuth('login');
+        } catch (err) {
+            alert("Error uploading files. Please try a smaller image.");
+        }
+    }
+
+    function handleLogin(e) {
+        e.preventDefault();
+        const loginId = document.getElementById('login-id').value;
+        const loginPin = document.getElementById('login-pin').value;
+
+        let doctors = JSON.parse(localStorage.getItem('doctorAccounts')) || [];
+        const user = doctors.find(doc => doc.licenseId === loginId && doc.secretPin === loginPin);
+
+        if (user) {
+            localStorage.setItem('currentDoctor', JSON.stringify(user));
+            window.location.href = 'doctor-dashboard.html';
+        } else {
+            alert("Invalid License ID or PIN!");
+        }
+    }
+</script>
+</body>
+</html>

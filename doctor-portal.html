@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Doctor Portal - DigiHealth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #2c5282; --accent: #38b2ac; --bg: #f7fafc; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); padding: 40px; }
+        .doc-container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 10px; }
+        .btn-update { background: var(--accent); color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: 700; cursor: pointer; }
+        .search-section { border-bottom: 2px solid #edf2f7; margin-bottom: 20px; padding-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="doc-container">
+    <h2>Doctor Consultation Panel</h2>
+    
+    <div class="search-section">
+        <label>Find Patient by Username:</label>
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="searchUser" placeholder="e.g. vinay123">
+            <button onclick="findPatient()" style="padding:0 20px; border-radius:10px; cursor:pointer;">Search</button>
+        </div>
+    </div>
+
+    <div id="editFields" class="hidden" style="display:none;">
+        <h3 id="patientNameDisplay">Editing Patient: ...</h3>
+        
+        <label>Blood Group</label>
+        <select id="docBlood">
+            <option value="A+">A+</option><option value="O+">O+</option>
+            <option value="B+">B+</option><option value="AB+">AB+</option>
+        </select>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+            <div><label>Height (cm)</label><input type="number" id="docHeight"></div>
+            <div><label>Weight (kg)</label><input type="number" id="docWeight"></div>
+        </div>
+
+        <label>New Prescription</label>
+        <textarea id="docPresc" rows="4" placeholder="Enter medicine details..."></textarea>
+
+        <button class="btn-update" onclick="updatePatientData()">Save Medical Update</button>
+    </div>
+</div>
+
+<script>
+    let activePatient = null;
+
+    function findPatient() {
+        const username = document.getElementById('searchUser').value;
+        const patients = JSON.parse(localStorage.getItem('patientsList')) || [];
+        activePatient = patients.find(p => p.username === username);
+
+        if (activePatient) {
+            document.getElementById('editFields').style.display = 'block';
+            document.getElementById('patientNameDisplay').innerText = "Editing: " + activePatient.name;
+            document.getElementById('docBlood').value = activePatient.bloodGroup || "A+";
+            document.getElementById('docHeight').value = activePatient.height || "";
+            document.getElementById('docWeight').value = activePatient.weight || "";
+        } else {
+            alert("Patient not found!");
+        }
+    }
+
+    function updatePatientData() {
+        let patients = JSON.parse(localStorage.getItem('patientsList'));
+        const index = patients.findIndex(p => p.username === activePatient.username);
+
+        // Update the locked fields
+        patients[index].bloodGroup = document.getElementById('docBlood').value;
+        patients[index].height = document.getElementById('docHeight').value;
+        patients[index].weight = document.getElementById('docWeight').value;
+
+        // Add a prescription if text exists
+        const newText = document.getElementById('docPresc').value;
+        if(newText) {
+            if(!patients[index].prescriptions) patients[index].prescriptions = [];
+            patients[index].prescriptions.unshift({
+                date: new Date().toLocaleDateString(),
+                doctor: "Dr. Admin",
+                meds: [{ name: newText, dose: "As directed", timing: "1-0-1", duration: "7 Days" }]
+            });
+        }
+
+        localStorage.setItem('patientsList', JSON.stringify(patients));
+        alert("Medical records updated successfully!");
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Reports | DigiHealth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a365d;
+            --accent: #38b2ac;
+            --bg: #f7fafc;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); padding-bottom: 50px; }
+
+        .header { padding: 40px 5%; background: var(--white); border-bottom: 1px solid var(--border); margin-bottom: 30px; }
+        .back-btn { text-decoration: none; color: var(--accent); font-weight: 700; display: inline-block; margin-bottom: 15px; }
+
+        /* --- CATEGORY GRID (Matching your Scanning UI) --- */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 50px;
+            padding: 0 5%;
+        }
+
+        .cat-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 2px solid transparent;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .cat-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .cat-card .icon { font-size: 3rem; margin-bottom: 15px; display: block; }
+        .cat-card h3 { font-size: 1.1rem; margin-bottom: 5px; color: var(--primary); }
+        .cat-card p { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* --- REPORT BOXES SECTION --- */
+        .reports-section { padding: 0 5%; }
+        .section-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 20px; color: var(--primary); display: none; }
+
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .report-box {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 25px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            animation: slideUp 0.4s ease;
+            position: relative;
+        }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .report-badge { 
+            background: #e6fffa; color: #2c7a7b; padding: 5px 12px; border-radius: 8px; 
+            font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 15px; display: inline-block;
+        }
+
+        .res-row { display: flex; align-items: baseline; gap: 10px; margin: 15px 0; }
+        .res-val { font-size: 2.5rem; font-weight: 800; color: var(--primary); }
+        .res-unit { font-size: 1rem; color: var(--text-muted); font-weight: 600; }
+        
+        .notes { background: #f8fafc; padding: 15px; border-radius: 12px; font-size: 0.85rem; border-left: 4px solid var(--accent); }
+
+        .empty-msg { text-align: center; grid-column: 1/-1; padding: 60px; color: var(--text-muted); border: 2px dashed var(--border); border-radius: 20px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="patient-dashboard.html" class="back-btn">← Back to Dashboard</a>
+        <h1>Laboratory Reports</h1>
+        <p style="color: var(--text-muted);"><center>Select a test category to view your diagnostic results</center></p>
+    </div>
+
+    <div class="category-grid">
+        <div class="cat-card" onclick="filterLabReports('Blood Test')">
+            <span class="icon">🩸</span>
+            <h3>Blood Test</h3>
+            <p>CBC, Hemoglobin, and Blood Group</p>
+        </div>
+        <div class="cat-card" onclick="filterLabReports('Sugar Test')">
+            <span class="icon">💉</span>
+            <h3>Sugar Test</h3>
+            <p>Diabetes, Glucose, and HbA1c</p>
+        </div>
+        <div class="cat-card" onclick="filterLabReports('Urine Test')">
+            <span class="icon">🧪</span>
+            <h3>Urine Test</h3>
+            <p>Infection, pH, and Kidney function</p>
+        </div>
+        <div class="cat-card" onclick="filterLabReports('Thyroid')">
+            <span class="icon">🧬</span>
+            <h3>Thyroid Profile</h3>
+            <p>T3, T4, and TSH levels</p>
+        </div>
+    </div>
+
+    <div class="reports-section">
+        <h2 id="view-title" class="section-title">Test Results</h2>
+        <div id="report-grid" class="report-grid">
+            </div>
+        <div id="no-reports" class="empty-msg">
+            <p>No reports found for this category. Please check back later.</p>
+        </div>
+    </div>
+
+    <script>
+        function filterLabReports(category) {
+            const patient = JSON.parse(localStorage.getItem('currentPatient'));
+            if (!patient) {
+                alert("Session expired. Please log in.");
+                return;
+            }
+
+            // Show and update title
+            const titleElem = document.getElementById('view-title');
+            titleElem.style.display = 'block';
+            titleElem.innerText = category + " Results";
+            
+            const grid = document.getElementById('report-grid');
+            const empty = document.getElementById('no-reports');
+            
+            // Get data from patient records
+            const allRecords = patient.labRecords || [];
+            // We use .includes to match category names (e.g., 'Blood Test' or 'Sugar Test')
+            const filtered = allRecords.filter(r => r.testName.toLowerCase().includes(category.toLowerCase()));
+
+            if (filtered.length === 0) {
+                grid.innerHTML = "";
+                empty.style.display = "block";
+            } else {
+                empty.style.display = "none";
+                grid.innerHTML = filtered.map(r => `
+                    <div class="report-box">
+                        <span class="report-badge">${r.testName}</span>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">DATE: ${r.date}</div>
+                        
+                        <div class="res-row">
+                            <span class="res-val">${r.result}</span>
+                            <span class="res-unit">${getUnit(r.testName)}</span>
+                        </div>
+
+                        <div class="notes">
+                            <b style="display:block; font-size: 0.7rem; color: var(--accent); margin-bottom: 5px;">LAB INTERPRETATION</b>
+                            ${r.remarks || 'Your results are within the reference range.'}
+                        </div>
+                        
+                        <div style="margin-top: 15px; font-size: 0.7rem; border-top: 1px solid #eee; padding-top: 10px; color: var(--text-muted); display: flex; justify-content: space-between;">
+                            <span>Auth: ${r.authorizedBy || 'Medical Lab'}</span>
+                            <span style="color: #38a169; font-weight: 800;">VERIFIED</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // Smooth scroll to the results
+            window.scrollTo({ top: 500, behavior: 'smooth' });
+        }
+
+        function getUnit(testName) {
+            let t = testName.toLowerCase();
+            if (t.includes('sugar') || t.includes('glucose')) return 'mg/dL';
+            if (t.includes('blood') || t.includes('hemoglobin')) return 'g/dL';
+            if (t.includes('thyroid')) return 'μIU/mL';
+            return 'Units';
+        }
+    </script>
+</body>
+</html>

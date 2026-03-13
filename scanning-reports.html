@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanning Reports | DigiHealth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a365d;
+            --accent: #38b2ac;
+            --bg: #f7fafc;
+            --white: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text-main); }
+
+        header {
+            background: var(--primary); padding: 20px 50px;
+            display: flex; justify-content: space-between; align-items: center;
+            color: white; border-bottom: 4px solid var(--accent);
+        }
+
+        .back-nav { color: white; text-decoration: none; font-weight: 600; font-size: 0.9rem; opacity: 0.9; transition: 0.3s; }
+        .back-nav:hover { opacity: 1; transform: translateX(-3px); }
+
+        .container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+
+        .section-intro { margin-bottom: 40px; }
+        .section-intro h1 { font-size: 2.2rem; font-weight: 800; color: var(--primary); margin: 0; }
+        .section-intro p { color: var(--text-muted); font-size: 1.1rem; }
+
+        /* --- CATEGORY GRID --- */
+        .scan-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            transition: 0.5s ease;
+        }
+
+        .scan-card {
+            background: var(--white); border-radius: 24px; padding: 35px 20px;
+            text-align: center; cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid var(--border); box-shadow: var(--shadow);
+        }
+
+        /* The Glow & Lift Effect */
+        .scan-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 20px 40px rgba(56, 178, 172, 0.15);
+            border-color: var(--accent);
+        }
+
+        .scan-card .icon { 
+            font-size: 3.5rem; 
+            margin-bottom: 20px; 
+            display: block; 
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
+        }
+
+        .scan-card h3 { margin: 10px 0; color: var(--primary); font-weight: 700; font-size: 1.2rem; }
+        .scan-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+
+        /* --- REPORT DETAIL (HISTORY BOXES) --- */
+        #reportDetail {
+            display: none; animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .detail-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
+        }
+
+        .btn-close { 
+            background: var(--primary); color: white; border: none; 
+            padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 700;
+        }
+
+        .report-box {
+            background: white; padding: 25px; border-radius: 20px;
+            border-left: 6px solid var(--accent); box-shadow: var(--shadow);
+            margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .res-info h4 { margin: 0; color: var(--primary); font-size: 1.1rem; }
+        .res-info small { color: var(--text-muted); font-weight: 600; }
+
+        .header-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="patient-dashboard.html" class="back-nav">← Back to Dashboard</a>
+    <div onclick="window.location.href='patient-profile.html'" style="cursor:pointer;">
+        <img src="" id="navAvatar" class="header-avatar hidden">
+        <div id="navInitials" style="width:45px; height:45px; border-radius:50%; background:var(--accent); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; border:2px solid white;">??</div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="section-intro" id="introText">
+        <h1>Digital Scans</h1>
+        <p>Access your imaging history and radiology reports</p>
+    </div>
+
+    <div class="scan-grid" id="mainGrid">
+        <div class="scan-card" onclick="openReport('MRI Scan')">
+            <span class="icon">🧠</span>
+            <h3>MRI Scan</h3>
+            <p>High-resolution Brain, Spine & Joint imaging</p>
+        </div>
+
+        <div class="scan-card" onclick="openReport('X-Ray')">
+            <span class="icon">🦴</span>
+            <h3>X-Ray</h3>
+            <p>Chest, Bone fractures & Dental imaging</p>
+        </div>
+
+        <div class="scan-card" onclick="openReport('CT Scan')">
+            <span class="icon">⚪</span>
+            <h3>CT Scan</h3>
+            <p>Cross-sectional internal organ visualization</p>
+        </div>
+
+        <div class="scan-card" onclick="openReport('Ultrasound')">
+            <span class="icon">👶</span>
+            <h3>Ultrasound</h3>
+            <p>Abdominal, Pelvic & Pregnancy scans</p>
+        </div>
+    </div>
+
+    <div id="reportDetail">
+        <div class="detail-header">
+            <h2 id="detailTitle" style="color: var(--primary); font-weight: 800; margin: 0;">Category</h2>
+            <button class="btn-close" onclick="closeReport()">✕ Close</button>
+        </div>
+        
+        <div id="reportContent">
+            <div class="report-box">
+                <div class="res-info">
+                    <small>UPLOADED ON 12 MAR 2026</small>
+                    <h4>Radiology Summary Report</h4>
+                </div>
+                <button style="padding: 10px 15px; border: 2px solid var(--accent); background: none; color: var(--accent); border-radius: 10px; font-weight: 700; cursor: pointer;">View Scan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.onload = function() {
+        const patient = JSON.parse(localStorage.getItem('currentPatient'));
+        if (!patient) { window.location.href = 'login.html'; return; }
+
+        const navAvatar = document.getElementById('navAvatar');
+        const navInitials = document.getElementById('navInitials');
+        if (patient.profilePic) {
+            navAvatar.src = patient.profilePic;
+            navAvatar.classList.remove('hidden');
+            navInitials.classList.add('hidden');
+        } else {
+            navInitials.innerText = patient.name ? patient.name[0].toUpperCase() : "P";
+        }
+    };
+
+    function openReport(type) {
+        document.getElementById('mainGrid').style.display = 'none';
+        document.getElementById('introText').style.display = 'none';
+        document.getElementById('reportDetail').style.display = 'block';
+        document.getElementById('detailTitle').innerText = type + " History";
+
+        // Logic to filter patient.labRecords if you want real data
+        const patient = JSON.parse(localStorage.getItem('currentPatient'));
+        const reports = patient.labRecords || [];
+        const filtered = reports.filter(r => r.testName === type);
+
+        const content = document.getElementById('reportContent');
+        if (filtered.length > 0) {
+            content.innerHTML = filtered.map(r => `
+                <div class="report-box">
+                    <div class="res-info">
+                        <small>EXAM DATE: ${r.date}</small>
+                        <h4>${r.testName} Result: ${r.result}</h4>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:5px;">${r.remarks}</p>
+                    </div>
+                    <span style="color:var(--accent); font-weight:800;">VERIFIED</span>
+                </div>
+            `).join('');
+        }
+    }
+
+    function closeReport() {
+        document.getElementById('mainGrid').style.display = 'grid';
+        document.getElementById('introText').style.display = 'block';
+        document.getElementById('reportDetail').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>

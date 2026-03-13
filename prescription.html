@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescriptions - DigiHealth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a365d;
+            --accent: #38b2ac;
+            --bg: #f0f4f8;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body { 
+            margin: 0; 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text-main);
+        }
+
+        header {
+            background: var(--white); padding: 15px 50px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .back-nav {
+            display: flex; align-items: center; gap: 12px;
+            text-decoration: none; color: var(--primary);
+            font-weight: 700; transition: 0.2s;
+        }
+        .back-nav:hover { color: var(--accent); transform: translateX(-5px); }
+
+        .header-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            object-fit: cover; border: 2px solid var(--accent);
+        }
+
+        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+
+        .page-title { margin-bottom: 30px; animation: fadeInUp 0.5s ease-out; }
+
+        .prescription-card {
+            background: var(--white); border-radius: 24px; padding: 35px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04); margin-bottom: 30px;
+            animation: fadeInUp 0.6s ease-out forwards;
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+
+        .presc-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            border-bottom: 2px solid var(--bg); padding-bottom: 20px; margin-bottom: 25px;
+        }
+
+        .doc-info h4 { margin: 0; color: var(--accent); font-size: 1.1rem; }
+        .doc-info p { margin: 4px 0 0; color: var(--text-muted); font-size: 0.85rem; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; padding: 12px 10px; }
+        td { padding: 20px 10px; border-bottom: 1px solid var(--bg); font-weight: 600; }
+
+        .med-name { color: var(--primary); font-size: 1rem; }
+        .dosage-tag { 
+            background: #e6fffa; color: #2c7a7b; padding: 5px 12px; 
+            border-radius: 12px; font-size: 0.8rem; display: inline-block;
+        }
+
+        .btn-print {
+            background: var(--primary); color: white; border: none;
+            padding: 10px 20px; border-radius: 10px; font-weight: 600;
+            cursor: pointer; transition: 0.3s; margin-top: 20px;
+        }
+        .btn-print:hover { background: var(--accent); }
+
+        .hidden { display: none; }
+
+        @media print {
+            header, .btn-print, .back-nav { display: none; }
+            .prescription-card { box-shadow: none; border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="patient-dashboard.html" class="back-nav">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        <span>Dashboard</span>
+    </a>
+    
+    <div onclick="window.location.href='patient-profile.html'" style="cursor:pointer;">
+        <img src="" id="navAvatar" class="header-avatar hidden">
+        <div id="navInitials" style="width:40px; height:40px; border-radius:50%; background:var(--accent); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold;">??</div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="page-title">
+        <h1 style="margin:0; color: var(--primary);">Medical Prescriptions</h1>
+        <p style="color: var(--text-muted);">View and download your medication history</p>
+    </div>
+
+    <div id="presc-list">
+        </div>
+</div>
+
+<script>
+    window.onload = function() {
+        const currentPatient = JSON.parse(localStorage.getItem('currentPatient'));
+        if (!currentPatient) { window.location.href = 'login.html'; return; }
+
+        // Sync Header Photo
+        const navAvatar = document.getElementById('navAvatar');
+        const navInitials = document.getElementById('navInitials');
+        
+        if (currentPatient.profilePic) {
+            navAvatar.src = currentPatient.profilePic;
+            navAvatar.classList.remove('hidden');
+            navInitials.classList.add('hidden');
+        } else {
+            navInitials.innerText = currentPatient.name ? currentPatient.name[0].toUpperCase() : "P";
+        }
+
+        renderPrescriptions(currentPatient);
+    };
+
+    function renderPrescriptions(patient) {
+        const listDiv = document.getElementById('presc-list');
+        
+        // Mock data
+        const prescriptions = patient.prescriptions || [
+            { 
+                date: "March 12, 2026", 
+                doctor: "Dr. Vinay K.", 
+                specialty: "Senior Cardiologist",
+                meds: [
+                    { name: "Aspirin", dose: "75mg", timing: "1-0-0", duration: "30 Days" },
+                    { name: "Atorvastatin", dose: "20mg", timing: "0-0-1", duration: "15 Days" }
+                ]
+            }
+        ];
+
+        listDiv.innerHTML = prescriptions.map((p, index) => `
+            <div class="prescription-card" style="animation-delay: ${index * 0.1}s">
+                <div class="presc-header">
+                    <div class="doc-info">
+                        <h4>${p.doctor}</h4>
+                        <p>${p.specialty}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <small style="color: var(--text-muted); font-weight: 700;">DATE ISSUED</small>
+                        <div style="font-weight: 700; color: var(--primary); margin-top: 4px;">${p.date}</div>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Medicine Name</th>
+                            <th>Dosage</th>
+                            <th>Timing</th>
+                            <th>Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${p.meds.map(m => `
+                            <tr>
+                                <td class="med-name">${m.name}</td>
+                                <td><span class="dosage-tag">${m.dose}</span></td>
+                                <td>${m.timing}</td>
+                                <td style="color: var(--text-muted);">${m.duration}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                <button class="btn-print" onclick="window.print()">Print Prescription</button>
+            </div>
+        `).join('');
+    }
+</script>
+
+</body>
+</html>
